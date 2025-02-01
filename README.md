@@ -1,53 +1,56 @@
-# 回転する正方形内のボールシミュレーション
+# Ball Simulation in a Rotating Square
 
-各モデルの実装とその特徴を示すプロジェクトです。
+English | [日本語](README.ja.md)
 
-## ファイル構成
+A project showcasing different implementation approaches and their characteristics using various LLM models.
 
-### 基本実装
-- `01_o3_mini_basic.py` - O3の最小限の実装
-- `02_o3_high_oop.py` - O3のオブジェクト指向実装
-- `03_deepseek_r1_basic.py` - DeepSeek R1の基本実装
-- `04_o3_improved_collision.py` - O3の改良版（ボール同士の衝突対応）
+## File Structure
 
-### GIF記録バージョン（90秒）
-- `01_o3_mini_basic_90s_gif.py` - O3ミニマル実装のGIF記録版
-- `02_o3_high_oop_90s_gif.py` - O3オブジェクト指向実装のGIF記録版
-- `03_deepseek_r1_basic_90s_gif.py` - DeepSeek R1基本実装のGIF記録版
-- `04_o3_improved_collision_90s_gif.py` - O3改良版のGIF記録版
+### Core Implementations
+- `01_o3_mini_basic.py` - O3 minimal implementation
+- `02_o3_high_oop.py` - O3 object-oriented implementation
+- `03_deepseek_r1_basic.py` - DeepSeek R1 basic implementation
+- `04_o3_improved_collision.py` - O3 improved version (with ball-to-ball collision)
 
-## 各実装の特徴
+### GIF Recording Versions (90 seconds)
+- `01_o3_mini_basic_90s_gif.py` - O3 minimal implementation with GIF recording
+- `02_o3_high_oop_90s_gif.py` - O3 object-oriented implementation with GIF recording
+- `03_deepseek_r1_basic_90s_gif.py` - DeepSeek R1 basic implementation with GIF recording
+- `04_o3_improved_collision_90s_gif.py` - O3 improved version with GIF recording
 
-### O3 ミニマル実装
-- シンプルで直接的なアプローチ
-- 基本的な衝突判定
-- 最小限のコード構造
+## Implementation Features
 
-![O3 ミニマル実装のシミュレーション](o3_mini_rotating_balls_90s.gif)
+### O3 Minimal Implementation
+- Simple and direct approach
+- Basic collision detection
+- Minimal code structure
 
-### O3 オブジェクト指向実装
-- Vector2Dによる物理計算
-- HSV色空間による色生成
-- クラスベースの設計
+![O3 Minimal Implementation Simulation](o3_mini_rotating_balls_90s.gif)
 
-![O3 オブジェクト指向実装のシミュレーション](o3_high_rotating_balls_90s.gif)
+### O3 Object-Oriented Implementation
+- Physics calculations using Vector2D
+- Color generation using HSV color space
+- Class-based design
 
-### DeepSeek R1基本実装
-- 関数ベースの設計
-- 基本的な衝突判定
-- 実用的なアプローチ
+![O3 Object-Oriented Implementation Simulation](o3_high_rotating_balls_90s.gif)
 
-![DeepSeek R1基本実装のシミュレーション](deepseek_r1_rotating_balls_90s.gif)
+### DeepSeek R1 Basic Implementation
+- Function-based design
+- Basic collision detection
+- Practical approach
 
-### O3 改良版
-- ボール同士の衝突対応
-- ローカル座標系での物理計算
-- 完全弾性衝突
+![DeepSeek R1 Basic Implementation Simulation](deepseek_r1_rotating_balls_90s.gif)
 
-![O3 改良版のシミュレーション](o3_improved_collision_90s.gif)
+### O3 Improved Version
+- Ball-to-ball collision handling
+- Physics calculations in local coordinate system
+- Perfect elastic collision
 
-## GIF記録機能
-- 90秒（1分30秒）の記録
-- 30FPS
-- フレームスキップによるメモリ最適化
-- 進捗表示
+![O3 Improved Version Simulation](o3_improved_collision_90s.gif)
+
+## GIF Recording Features
+- 90 seconds (1.5 minutes) recording
+- 30 FPS
+- Memory optimization through frame skipping
+- Progress display
+- Remaining time display
