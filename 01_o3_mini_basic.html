@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>O3 Mini - 回転する正方形内の弾むボール</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // グローバル定数
+    const WIDTH = 800;
+    const HEIGHT = 600;
+    const SQUARE_SIZE = 300;
+    const BALL_RADIUS = 10;
+    const ROTATION_SPEED = 0.5;  // 度/秒
+
+    // グローバル変数
+    let balls = [];
+    let lastSpawnTime = 0;
+    let angle = 0;
+
+    class Ball {
+      constructor() {
+        // ボールの初期位置をランダムに設定
+        this.x = random(BALL_RADIUS, SQUARE_SIZE - BALL_RADIUS);
+        this.y = random(BALL_RADIUS, SQUARE_SIZE - BALL_RADIUS);
+        // ランダムな速度を設定
+        this.dx = random(-5, 5);
+        this.dy = random(-5, 5);
+        // ランダムな色を設定
+        this.color = color(
+          random(50, 255),
+          random(50, 255),
+          random(50, 255)
+        );
+      }
+
+      update() {
+        // 位置の更新
+        this.x += this.dx;
+        this.y += this.dy;
+
+        // 衝突判定と反射
+        if (this.x <= BALL_RADIUS || this.x >= SQUARE_SIZE - BALL_RADIUS) {
+          this.dx *= -1;
+        }
+        if (this.y <= BALL_RADIUS || this.y >= SQUARE_SIZE - BALL_RADIUS) {
+          this.dy *= -1;
+        }
+      }
+    }
+
+    function setup() {
+      createCanvas(WIDTH, HEIGHT);
+    }
+
+    function draw() {
+      let currentTime = millis();
+      
+      // 5秒ごとに新しいボールを追加
+      if (currentTime - lastSpawnTime > 5000) {
+        balls.push(new Ball());
+        lastSpawnTime = currentTime;
+      }
+
+      // 正方形の回転
+      angle += ROTATION_SPEED;
+      if (angle >= 360) {
+        angle = 0;
+      }
+
+      // 画面のクリア
+      background(30);
+
+      // 回転行列の計算
+      let rad = radians(angle);
+      let cos_val = cos(rad);
+      let sin_val = sin(rad);
+
+      // 正方形の中心座標
+      let center_x = WIDTH / 2;
+      let center_y = HEIGHT / 2;
+
+      // 正方形の頂点を計算
+      let points = [];
+      for (let [x, y] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        let rotated_x = x * SQUARE_SIZE/2 * cos_val - y * SQUARE_SIZE/2 * sin_val;
+        let rotated_y = x * SQUARE_SIZE/2 * sin_val + y * SQUARE_SIZE/2 * cos_val;
+        points.push([center_x + rotated_x, center_y + rotated_y]);
+      }
+
+      // 正方形を描画
+      stroke(200);
+      strokeWeight(2);
+      noFill();
+      beginShape();
+      for (let [x, y] of points) {
+        vertex(x, y);
+      }
+      endShape(CLOSE);
+
+      // ボールの更新と描画
+      for (let ball of balls) {
+        ball.update();
+        // ボールの座標を回転させて描画
+        let rotated_x = (ball.x - SQUARE_SIZE/2) * cos_val - (ball.y - SQUARE_SIZE/2) * sin_val;
+        let rotated_y = (ball.x - SQUARE_SIZE/2) * sin_val + (ball.y - SQUARE_SIZE/2) * cos_val;
+        let screen_x = center_x + rotated_x;
+        let screen_y = center_y + rotated_y;
+        noStroke();
+        fill(ball.color);
+        circle(screen_x, screen_y, BALL_RADIUS * 2);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>回転する正方形内の弾むボール</title>
+  <!-- p5.js を CDN から読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
+</head>
+<body>
+  <script>
+    // グローバル定数（p5.js の関数に依存しない数値リテラルを使用）
+    const WIDTH = 800;
+    const HEIGHT = 600;
+    const SQUARE_SIZE = 400;             
+    const SQUARE_HALF = SQUARE_SIZE / 2;   
+    const BALL_RADIUS = 10;              
+    const BALL_SPEED = 200;              
+
+    // グローバル変数（setup() 内で初期化するもの）
+    let ROTATION_SPEED;  // 回転速度（ラジアン/秒）
+    let SQUARE_CENTER;   // 正方形コンテナの中心位置（p5.Vector）
+    let balls = [];      // シミュレーションする球たち
+    let ballSpawnTimer = 0;  
+    let angle = 0;       // コンテナの現在の回転角（ラジアン）
+
+    // --- Ball クラス ---
+    // ローカル座標系（正方形中心を原点）で位置と速度を管理
+    class Ball {
+      constructor(x, y, vx, vy, col) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.col = col;
+      }
+      
+      update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        
+        // 壁との衝突判定（ローカル座標系での境界：±(SQUARE_HALF - BALL_RADIUS)）
+        if (this.x > SQUARE_HALF - BALL_RADIUS) {
+          this.x = SQUARE_HALF - BALL_RADIUS;
+          this.vx = -this.vx;
+        } else if (this.x < -SQUARE_HALF + BALL_RADIUS) {
+          this.x = -SQUARE_HALF + BALL_RADIUS;
+          this.vx = -this.vx;
+        }
+        if (this.y > SQUARE_HALF - BALL_RADIUS) {
+          this.y = SQUARE_HALF - BALL_RADIUS;
+          this.vy = -this.vy;
+        } else if (this.y < -SQUARE_HALF + BALL_RADIUS) {
+          this.y = -SQUARE_HALF + BALL_RADIUS;
+          this.vy = -this.vy;
+        }
+      }
+    }
+
+    // --- 球同士の衝突判定と解決 ---
+    // 等質な球同士の完全弾性衝突（近似）を実装
+    function resolveBallCollisions(balls) {
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
+          let b1 = balls[i];
+          let b2 = balls[j];
+          let dx = b1.x - b2.x;
+          let dy = b1.y - b2.y;
+          let dist = sqrt(dx * dx + dy * dy);
+          if (dist < 2 * BALL_RADIUS) {
+            // 衝突している場合の法線ベクトル
+            let nx, ny;
+            if (dist === 0) {
+              nx = 1;
+              ny = 0;
+            } else {
+              nx = dx / dist;
+              ny = dy / dist;
+            }
+            // 重なり補正：各球を半分ずつずらす
+            let overlap = 2 * BALL_RADIUS - dist;
+            let correction = overlap / 2;
+            b1.x += nx * correction;
+            b1.y += ny * correction;
+            b2.x -= nx * correction;
+            b2.y -= ny * correction;
+            
+            // 衝突応答：法線方向の相対速度成分の反転
+            let v_rel = (b1.vx - b2.vx) * nx + (b1.vy - b2.vy) * ny;
+            if (v_rel < 0) {
+              let impulse = -v_rel;
+              b1.vx += impulse * nx;
+              b1.vy += impulse * ny;
+              b2.vx -= impulse * nx;
+              b2.vy -= impulse * ny;
+            }
+          }
+        }
+      }
+    }
+
+    function setup() {
+      createCanvas(WIDTH, HEIGHT);
+      // p5.js の初期化後であれば、p5.js の関数が使えるので設定可能
+      ROTATION_SPEED = radians(10);  // 1秒間に10度回転
+      SQUARE_CENTER = createVector(width / 2, height / 2);
+    }
+
+    function draw() {
+      let dt = deltaTime / 1000.0;  // ミリ秒を秒に変換
+      background(30);
+      
+      // 正方形コンテナの回転更新
+      angle += ROTATION_SPEED * dt;
+      
+      // 各球の位置更新
+      for (let ball of balls) {
+        ball.update(dt);
+      }
+      
+      // 球同士の衝突判定と解決
+      resolveBallCollisions(balls);
+      
+      // 5秒ごとに新たな球を生成
+      ballSpawnTimer += dt;
+      if (ballSpawnTimer >= 5) {
+        ballSpawnTimer = 0;
+        // ローカル座標系上で、壁から十分離れた位置をランダムに選択
+        let x = random(-SQUARE_HALF + BALL_RADIUS, SQUARE_HALF - BALL_RADIUS);
+        let y = random(-SQUARE_HALF + BALL_RADIUS, SQUARE_HALF - BALL_RADIUS);
+        let theta = random(0, TWO_PI);
+        let vx = BALL_SPEED * cos(theta);
+        let vy = BALL_SPEED * sin(theta);
+        let col = color(random(50, 255), random(50, 255), random(50, 255));
+        balls.push(new Ball(x, y, vx, vy, col));
+      }
+      
+      // --- 正方形コンテナの描画 ---
+      let localCorners = [
+        createVector(-SQUARE_HALF, -SQUARE_HALF),
+        createVector(SQUARE_HALF, -SQUARE_HALF),
+        createVector(SQUARE_HALF, SQUARE_HALF),
+        createVector(-SQUARE_HALF, SQUARE_HALF)
+      ];
+      
+      // ローカル座標の各頂点に回転を適用し、スクリーン座標に変換
+      let worldCorners = localCorners.map(v => {
+        let wx = SQUARE_CENTER.x + v.x * cos(angle) - v.y * sin(angle);
+        let wy = SQUARE_CENTER.y + v.x * sin(angle) + v.y * cos(angle);
+        return createVector(wx, wy);
+      });
+      
+      stroke(200);
+      strokeWeight(3);
+      noFill();
+      beginShape();
+      for (let v of worldCorners) {
+        vertex(v.x, v.y);
+      }
+      endShape(CLOSE);
+      
+      // --- 球の描画 ---
+      noStroke();
+      for (let ball of balls) {
+        fill(ball.col);
+        let wx = SQUARE_CENTER.x + ball.x * cos(angle) - ball.y * sin(angle);
+        let wy = SQUARE_CENTER.y + ball.x * sin(angle) + ball.y * cos(angle);
+        ellipse(wx, wy, BALL_RADIUS * 2, BALL_RADIUS * 2);
+      }
+    }
+  </script>
+</body>
+</html>
